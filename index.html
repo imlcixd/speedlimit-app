@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>SpeedDash — Sporty</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b1220"/>
+  <style>
+    /* ---------- Reset & base ---------- */
+    :root{
+      --bg:#07101b;
+      --panel:#0f1720;
+      --accent:#ff3b3b;
+      --accent2:#ff9b3b;
+      --muted:#9aa6b2;
+      --glass: rgba(255,255,255,0.04);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{background:linear-gradient(180deg,#041018 0%, #07101b 60%); color:#fff; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;}
+
+    /* ---------- App container ---------- */
+    .app {
+      width:100%;
+      max-width:900px;
+      height:100%;
+      max-height:900px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      align-items:stretch;
+    }
+
+    /* ---------- Header ---------- */
+    header{
+      display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:12px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      box-shadow: 0 6px 18px rgba(2,6,12,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .brand {display:flex;gap:10px;align-items:center;}
+    .logo {
+      width:48px;height:48px;border-radius:12px;background:conic-gradient(from 200deg, var(--accent), var(--accent2)); display:flex;align-items:center;justify-content:center;font-weight:700;color:#07101b;font-size:18px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+    }
+    .title {font-size:16px;font-weight:600;}
+    .subtitle {font-size:12px;color:var(--muted);}
+
+    /* ---------- Dashboard area ---------- */
+    .dash {
+      flex:1;
+      display:flex;
+      gap:12px;
+      align-items:stretch;
+    }
+
+    /* portrait / narrow: stack columns */
+    @media (max-width:720px) {
+      .dash { flex-direction:column; }
+    }
+
+    .left, .right {
+      border-radius:14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      padding:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .left { flex:2; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .right { flex:1; min-width:220px; display:flex; flex-direction:column; gap:12px; }
+
+    /* ---------- Speed big number ---------- */
+    .speed-ring {
+      width: 320px;height:320px;border-radius:50%; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;
+      border: 6px solid rgba(255,255,255,0.04);
+      box-shadow: inset 0 -10px 60px rgba(255,255,255,0.02);
+    }
+    .speed-value { font-size:96px; font-weight:800; letter-spacing: -4px; }
+    .speed-unit { font-size:18px; color:var(--muted); margin-top:-8px; }
+
+    .limit-bubble {
+      position:absolute; left:14px; top:14px; background:var(--panel); padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.04);
+      display:flex; flex-direction:column; align-items:flex-start;
+    }
+    .limit-bubble .label { font-size:12px; color:var(--muted); }
+    .limit-bubble .val { font-size:20px; font-weight:700; }
+
+    /* small tach / needle */
+    .tach {
+      position:absolute; right:14px; bottom:14px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02)); padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03);
+      width:160px; display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    .needle {
+      width:100%; height:36px; position:relative;
+    }
+    .needle .bar { height:6px; border-radius:6px; background:linear-gradient(90deg,#22313b,#0f738f); position:absolute; left:0; top:50%; transform-origin:left center; transform:rotate(0deg); }
+    .needle .tick { font-size:11px; color:var(--muted); }
+
+    /* ---------- Right column ---------- */
+    .info { padding:12px; border-radius:10px; background:var(--glass); border:1px solid rgba(255,255,255,0.02); }
+    .info h3 { margin:0;font-size:13px;color:var(--muted); }
+    .info p { margin:6px 0 0 0; font-size:20px; font-weight:700; }
+
+    .big-warning {
+      padding:12px;border-radius:10px;background:linear-gradient(90deg, rgba(255,59,59,0.12), rgba(255,155,59,0.06)); color:var(--accent); border:1px solid rgba(255,59,59,0.14);
+      display:flex; align-items:center; gap:10px; font-weight:700;
+    }
+
+    .controls { display:flex; gap:8px; flex-wrap:wrap; }
+    button {
+      background:transparent;border:1px solid rgba(255,255,255,0.06); padding:8px 12px;border-radius:8px;color:#fff;font-weight:600;
+    }
+    .ghost { opacity:0.7; font-size:13px; color:var(--muted); }
+
+    /* install prompt note */
+    .install-note { font-size:12px; color:var(--muted); margin-top:6px; }
+
+    /* portrait smaller speed ring */
+    @media (max-width:420px){
+      .speed-ring{width:250px;height:250px;}
+      .speed-value{font-size:72px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="brand">
+        <div class="logo">SD</div>
+        <div>
+          <div class="title">SpeedDash</div>
+          <div class="subtitle">Sporty — glanceable speed & limits</div>
+        </div>
+      </div>
+      <div class="ghost">no login · free · PWA</div>
+    </header>
+
+    <div class="dash">
+      <div class="left">
+        <div class="speed-ring" id="speedRing">
+          <div class="limit-bubble" id="limitBubble">
+            <div class="label">Road limit</div>
+            <div class="val" id="limitVal">—</div>
+          </div>
+
+          <div style="text-align:center">
+            <div style="font-size:14px;color:var(--muted);">Current</div>
+            <div class="speed-value" id="speedValue">0</div>
+            <div class="speed-unit" id="speedUnit">km/h</div>
+          </div>
+
+          <div class="tach">
+            <div class="needle" style="width:100%">
+              <div class="bar" id="needleBar" style="width:80%; transform:rotate(0deg)"></div>
+            </div>
+            <div class="tick" id="needleLabel">0%</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="info">
+          <h3>Status</h3>
+          <p id="statusText">Waiting for location…</p>
+        </div>
+
+        <div class="info">
+          <h3>Diagnostics</h3>
+          <p id="diag">lat —, lon —, accuracy —</p>
+        </div>
+
+        <div class="big-warning" id="warning" style="display:none">Overspeed!</div>
+
+        <div class="controls">
+          <button id="startBtn">Start</button>
+          <button id="stopBtn" disabled>Stop</button>
+          <button id="unitBtn">Switch to mph</button>
+          <button id="debugBtn">Debug: fetch limit now</button>
+        </div>
+
+        <div class="install-note" id="installNote">Install this app to your home screen for quick access (Add to Home Screen).</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- Config ---------- */
+const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+const QUERY_RADIUS = 45; // meters
+const MIN_MOVE_TO_QUERY = 20; // meters
+const MIN_SECONDS_BETWEEN_QUERIES = 6;
+const SPEED_SMOOTHING_WINDOW = 4; // simple moving average window
+
+/* ---------- State ---------- */
+let watchId = null;
+let lastPos = null;
+let lastQueryPos = null;
+let lastQueryAt = 0;
+let currentLimit = null; // km/h
+let useMph = false;
+let speedSamples = [];
+let deferredPrompt = null;
+
+/* ---------- Helpers ---------- */
+function kph(ms){ return ms * 3.6; }
+function msFromKph(k){ return k / 3.6; }
+function round(n){ return Math.round(n); }
+function distanceMeters(a,b){
+  // haversine
+  const R=6371000;
+  const toRad = x => x*Math.PI/180;
+  const dLat = toRad(b.lat - a.lat), dLon = toRad(b.lon - a.lon);
+  const la = toRad(a.lat), lb = toRad(b.lat);
+  const sin1 = Math.sin(dLat/2), sin2 = Math.sin(dLon/2);
+  const aa = sin1*sin1 + Math.cos(la)*Math.cos(lb)*sin2*sin2;
+  const c = 2*Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+  return R*c;
+}
+
+/* ---------- UI ---------- */
+const speedValue = document.getElementById('speedValue');
+const speedUnit = document.getElementById('speedUnit');
+const limitVal = document.getElementById('limitVal');
+const statusText = document.getElementById('statusText');
+const diag = document.getElementById('diag');
+const warning = document.getElementById('warning');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const unitBtn = document.getElementById('unitBtn');
+const debugBtn = document.getElementById('debugBtn');
+const needleBar = document.getElementById('needleBar');
+const needleLabel = document.getElementById('needleLabel');
+
+/* ---------- Speed smoothing ---------- */
+function pushSpeedSample(v){
+  speedSamples.push(v);
+  if(speedSamples.length > SPEED_SMOOTHING_WINDOW) speedSamples.shift();
+}
+function smoothedSpeed(){
+  if(speedSamples.length===0) return 0;
+  return speedSamples.reduce((a,b)=>a+b,0)/speedSamples.length;
+}
+
+/* ---------- Display updates ---------- */
+function updateUI(speedKph){
+  const sp = useMph ? (speedKph * 0.621371) : speedKph;
+  pushSpeedSample(sp);
+  const display = round(smoothedSpeed());
+  speedValue.textContent = display;
+  speedUnit.textContent = useMph ? 'mph' : 'km/h';
+
+  // limit display
+  if(currentLimit !== null){
+    const limitDisp = useMph ? Math.round(currentLimit * 0.621371) : currentLimit;
+    limitVal.textContent = limitDisp + ' ' + (useMph ? 'mph' : 'km/h');
+    // warning
+    if(display > limitDisp + 0.5){
+      warning.style.display = 'flex';
+      // vibration if available
+      if(navigator.vibrate) navigator.vibrate([200,100,200]);
+    } else {
+      warning.style.display = 'none';
+    }
+    // needle: percent of limit (cap 150% for max)
+    const pct = limitDisp > 0 ? Math.min(150, Math.round((display / limitDisp) * 100)) : 0;
+    needleBar.style.transform = 'rotate(' + (pct * 1.2 - 20) + 'deg)'; // map pct -> rotation
+    needleLabel.textContent = pct + '%';
+  } else {
+    limitVal.textContent = '—';
+    needleBar.style.transform = 'rotate(-20deg)';
+    needleLabel.textContent = '—';
+  }
+}
+
+/* ---------- Get speed from position (if device doesn't give speed) ---------- */
+function computeSpeedFrom(prev, cur){
+  const dt = (cur.timestamp - prev.timestamp) / 1000.0;
+  if(dt <= 0) return 0;
+  const m = distanceMeters({lat:prev.coords.latitude, lon:prev.coords.longitude}, {lat:cur.coords.latitude, lon:cur.coords.longitude});
+  const ms = m / dt;
+  return ms;
+}
+
+/* ---------- Overpass queries ---------- */
+async function fetchSpeedLimit(lat, lon){
+  // Throttle by distance/time
+  const now = Date.now();
+  if(lastQueryPos){
+    const moved = distanceMeters({lat,lon}, lastQueryPos);
+    const secs = (now - lastQueryAt) / 1000;
+    if(moved < MIN_MOVE_TO_QUERY && secs < MIN_SECONDS_BETWEEN_QUERIES){
+      return currentLimit;
+    }
+  }
+
+  lastQueryAt = now;
+  lastQueryPos = {lat,lon};
+
+  try {
+    // query ways with maxspeed
+    const q1 = `[out:json][timeout:8];
+      (
+        way(around:${QUERY_RADIUS},${lat},${lon})["maxspeed"];
+      );
+      out tags center;`;
+    const resp = await fetch(OVERPASS_ENDPOINT, { method:'POST', body:q1 });
+    if(!resp.ok) throw new Error('overpass fail');
+    const data = await resp.json();
+    if(data.elements && data.elements.length){
+      // find nearest element with numeric maxspeed
+      let best = null; let bestDist = Infinity;
+      for(const el of data.elements){
+        if(!el.tags || !el.tags.maxspeed) continue;
+        const msRaw = el.tags.maxspeed;
+        const parsed = parseMaxspeed(msRaw);
+        if(parsed == null) continue;
+        // get center
+        const center = el.center ? {lat:el.center.lat, lon:el.center.lon} : (el.lat && el.lon ? {lat:el.lat, lon:el.lon} : null);
+        let dist = 0;
+        if(center) dist = distanceMeters({lat,lon}, center);
+        else dist = 0;
+        if(dist < bestDist){ bestDist = dist; best = parsed; }
+      }
+      if(best != null){
+        currentLimit = best;
+        return best;
+      }
+    }
+
+    // if none, query highway type and map defaults
+    const q2 = `[out:json][timeout:8];
+      (
+        way(around:${QUERY_RADIUS},${lat},${lon})["highway"];
+      );
+      out tags center;`;
+    const resp2 = await fetch(OVERPASS_ENDPOINT, { method:'POST', body:q2 });
+    if(resp2.ok){
+      const d2 = await resp2.json();
+      if(d2.elements && d2.elements.length){
+        // pick nearest highway and map to default
+        let bestHw=null; let bestDist=Infinity;
+        for(const el of d2.elements){
+          if(!el.tags || !el.tags.highway) continue;
+          const hw = el.tags.highway;
+          const center = el.center ? {lat:el.center.lat, lon:el.center.lon} : (el.lat && el.lon ? {lat:el.lat, lon:el.lon} : null);
+          const dist = center ? distanceMeters({lat,lon}, center) : 0;
+          if(dist < bestDist){ bestDist = dist; bestHw = hw; }
+        }
+        if(bestHw){
+          const def = defaultForHighway(bestHw);
+          currentLimit = def;
+          return def;
+        }
+      }
+    }
+  } catch(err){
+    console.warn('Overpass error', err);
+  }
+  // if all fails, leave null
+  return currentLimit;
+}
+
+function parseMaxspeed(s){
+  if(!s) return null;
+  s = s.trim().toLowerCase();
+  // some values: "50", "50 km/h", "30 mph", "signals", "none"
+  const m = s.match(/(\d{1,3})/);
+  if(!m) return null;
+  let v = parseInt(m[1],10);
+  if(s.includes('mph')) v = Math.round(v * 1.60934);
+  return v;
+}
+function defaultForHighway(hw){
+  switch(hw){
+    case 'motorway': return 100;
+    case 'trunk': return 90;
+    case 'primary': return 80;
+    case 'secondary': return 80;
+    case 'tertiary': return 60;
+    case 'unclassified': case 'residential': return 50;
+    case 'service': return 30;
+    case 'living_street': return 10;
+    default: return 50;
+  }
+}
+
+/* ---------- Geolocation handling ---------- */
+async function startTracking(){
+  if(!('geolocation' in navigator)){
+    statusText.textContent = 'Geolocation not supported in this browser.';
+    return;
+  }
+
+  // request permission and start watch
+  statusText.textContent = 'Requesting location permission…';
+  // prefer high accuracy
+  const options = { enableHighAccuracy:true, maximumAge:0, timeout:10000 };
+
+  watchId = navigator.geolocation.watchPosition(async (pos) => {
+    // pos: Position object
+    const coords = pos.coords;
+    const lat = coords.latitude, lon = coords.longitude;
+    diag.textContent = `lat ${lat.toFixed(5)}, lon ${lon.toFixed(5)}, acc ${coords.accuracy}m`;
+
+    // speed might be null in some browsers; compute fallback
+    let msSpeed = coords.speed; // in m/s or null
+    if(msSpeed === null || msSpeed === undefined || isNaN(msSpeed)){
+      if(lastPos){
+        msSpeed = computeSpeedFrom(lastPos, pos);
+      } else {
+        msSpeed = 0;
+      }
+    }
+    lastPos = pos;
+
+    const kphVal = kph(msSpeed);
+
+    // update display
+    updateUI(kphVal);
+
+    // decide to query Overpass
+    const now = Date.now();
+    const moved = lastQueryPos ? distanceMeters({lat,lon}, lastQueryPos) : Infinity;
+    const secs = (now - lastQueryAt) / 1000;
+    if(moved > MIN_MOVE_TO_QUERY && secs >= MIN_SECONDS_BETWEEN_QUERIES){
+      statusText.textContent = 'Looking up road limit…';
+      await fetchSpeedLimit(lat, lon);
+      statusText.textContent = 'Live';
+      // update after fetch
+      updateUI(kphVal);
+    } else {
+      // occasionally show status
+      statusText.textContent = 'Live (cached limit)';
+    }
+
+  }, (err) => {
+    console.warn('geo err', err);
+    statusText.textContent = 'Location error: ' + (err.message || err.code);
+  }, options);
+
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+}
+
+/* ---------- Stop ---------- */
+function stopTracking(){
+  if(watchId !== null){
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+    statusText.textContent = 'Stopped';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+  }
+}
+
+/* ---------- Buttons ---------- */
+startBtn.addEventListener('click', () => startTracking());
+stopBtn.addEventListener('click', () => stopTracking());
+unitBtn.addEventListener('click', () => {
+  useMph = !useMph
